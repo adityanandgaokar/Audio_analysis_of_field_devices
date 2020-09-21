@@ -1,7 +1,6 @@
 import argparse
 import numpy as np
 import os
-#from models_1d_2d import CONVOLUTION1D,CONVOLUTION2D
 from glob import glob
 from sklearn.preprocessing import LabelEncoder
 #from sklearn import preprocessing
@@ -55,21 +54,19 @@ class DataGen(tf.keras.utils.Sequence):
             
     def __getitem__(self, index):
         # 'Generate one batch of data'
-        #print('ndudasndado')
+        
         indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
         
         wave_direc = [self.wave_direc[e] for e in indexes]
             
         labels = [self.labels[e] for e in indexes]
-
-        #X,Y = [],[]
+        
         X = np.empty((self.batch_size, 40, 969), dtype=np.float32)
         Y = np.empty((self.batch_size, self.no_classes), dtype=np.float32)
 
 
         for i, (path, label) in enumerate(zip(wave_direc, labels)):
             y, sr = librosa.load(path, sr=16000, mono=True)
-            #wav = self.__loadFile__(path)
             mfccs = librosa.feature.mfcc(y=y, sr=self.down_sample, n_mfcc = 40)
             mfccsscaled = np.mean(mfccs.T,axis=0)
             #rate, wav = wavfile.read(path)
@@ -78,40 +75,12 @@ class DataGen(tf.keras.utils.Sequence):
             X[i,] = mfccsscaled.reshape(-1, 1)
             Y[i,] = to_categorical(label, num_classes=self.no_classes)
             
-
-
-
-
-
-##
-##        for i in indexes:
-##            wav = self.__loadFile__(self.wave_direc[i])
-##                           
-##            mfccs = librosa.feature.mfcc(y=wav, sr=self.down_sample)
-##            
-##            X.append(np.mean(mfccs.T,axis=0))
-##            #print('manma emotion jage re')
-##            Y.append(self.labels[i])    
-##            Y = to_categorical(Y, num_classes=2)
-
         
-##        X = np.asarray(X)        
-##        X = np.random.randint(0,2, self.batch_size*40*969)
+
         X = X.reshape(self.batch_size, 40,969,1)
         
-        return X, Y
-##        return tf.convert_to_tensor(X), to_categorical(Y, num_classes=2)
-         
+        return X, Y         
                 
-        
-
-    def __loadFile__(self, wave_direc):
-        y, sr = librosa.load(wave_direc, sr=16000, mono=True)
-        #print(len(y))
-        if len(y)>16000*2:
-            return y[:1]
-        return np.pad(y, (0, 32000-len(y)), 'constant', constant_values=0)
-
     
     def on_epoch_end(self):
         # updating indexes after each epoch
@@ -126,27 +95,16 @@ class DataGen(tf.keras.utils.Sequence):
 def CONVOLUTION2D(no_classes, sample_rate, sample_time, X_train,Y_train, Y_test, X_test, batch_size=2):
 
     model_selection = args.model_selection
-    csv_path = os.path.join('C:/Users/i00504285/Desktop/Aditya/Sound_Analysis/CSF48/logs','{}_history.csv'.format(model_selection))
+    csv_path = os.path.join('adityanandgaokar/Sound_classification','{}_history.csv'.format(model_selection))
 
 
-
-    
-##    X_train = np.random.randint(0,2, 1542*128*63)
-##
-##    X_test = np.random.randint(0, 2, 172*128*63)
-##    
-    
       
     if K.image_data_format() == "channels_first":
         
-##        X_train = X_train.reshape(1542,1,128, 63)
-##        X_test = X_test.reshape(172, 1, 128, 63)
         input_shape = (1, 40, 969)
         channeldim = 1
-        #input_shape = (257,63,1)
+       
     else:
-##        X_train = X_train.reshape(1542,128, 63, 1)
-##        X_test = X_test.reshape(172, 128, 63, 1)
         input_shape = (40,969,1)
         channeldim = -1
         
@@ -166,63 +124,8 @@ def CONVOLUTION2D(no_classes, sample_rate, sample_time, X_train,Y_train, Y_test,
     model.add(Dense(no_classes, activation='softmax'))
 
     
-    
-    
-##    in_layer = layers.Input(input_shape)
-##    conv1 = layers.Conv2D(96, 11, strides=4, activation='relu')(in_layer)
-##    pool1 = layers.MaxPool2D(3, 2, padding='same')(conv1)
-##    conv2 = layers.Conv2D(256, 5, strides=1, padding='same', activation='relu')(pool1)
-##    pool2 = layers.MaxPool2D(3, 2, padding='same')(conv2)
-##    conv3 = layers.Conv2D(384, 3, strides=1, padding='same', activation='relu')(pool2)
-##    conv4 = layers.Conv2D(256, 3, strides=1, padding='same', activation='relu')(conv3)
-##    pool3 = layers.MaxPool2D(3, 2, padding='same')(conv4)
-##    flattened = layers.Flatten()(pool3)
-##    dense1 = layers.Dense(4096, activation='relu')(flattened)
-##    drop1 = layers.Dropout(0.5)(dense1)
-##    dense2 = layers.Dense(4096, activation='relu')(drop1)
-##    drop2 = layers.Dropout(0.5)(dense2)
-##    preds = layers.Dense(no_classes, activation='softmax')(drop2)
-##
-##    model = Model(in_layer, preds)
-
-
-
-##    model.add(Conv2D(filters=16, kernel_size=2, input_shape=input_shape, activation='relu'))
-##
-##    model.add(MaxPooling2D(pool_size=2))
-##
-##    model.add(Dropout(0.2))
-##
-##
-##
-##    model.add(Conv2D(filters=32, kernel_size=2, activation='relu'))
-##
-##    model.add(MaxPooling2D(pool_size=2))
-##
-##    model.add(Dropout(0.2))
-##
-##
-##
-##    model.add(Conv2D(filters=64, kernel_size=2, activation='relu'))
-##
-##    model.add(MaxPooling2D(pool_size=2))
-##
-##    model.add(Dropout(0.2))
-##
-##
-##
-##    model.add(Conv2D(filters=128, kernel_size=2, activation='relu'))
-##
-##    model.add(MaxPooling2D(pool_size=2))
-##
-##    model.add(Dropout(0.2))
-##
-##    model.add(GlobalAveragePooling2D())
-##
-##
-##
-##    model.add(Dense(no_classes, activation='softmax'))
-
+"""you could also use convolution neural network 2d which has written below one""" 
+"""Only you have to change input variable i"""
     
 ##    i = layers.Input(shape=(40, 32), name='input')
 ##    
@@ -256,6 +159,9 @@ def CONVOLUTION2D(no_classes, sample_rate, sample_time, X_train,Y_train, Y_test,
     
     
     
+"""you could also use strided convolution neural network you just have give right input variable according to your data"""
+
+
 ##    y = Normalization2D(str_axis='batch', name='batch_norm')(y)
 ##    y = layers.Conv2D(16, kernel_size=(7,7), strides= (2,2), padding='valid', kernel_initializer='he_normal', kernel_regularizer=l2(0.0005), name='CONVOLUTION2D_16')(y)
 ##    
@@ -297,6 +203,7 @@ def CONVOLUTION2D(no_classes, sample_rate, sample_time, X_train,Y_train, Y_test,
 ##    a = layers.Activation('softmax')(z)
 ##    model = Model(inputs= i, outputs= a, name='conv2d')
     
+    
     model.summary()
     #model = Model(inputs= x, outputs= z, name='conv2d')
     model.compile(optimizer='sgd', loss='categorical_crossentropy',
@@ -308,9 +215,7 @@ def CONVOLUTION2D(no_classes, sample_rate, sample_time, X_train,Y_train, Y_test,
                                     save_freq='epoch', verbose=1)
     csv_log = CSVLogger(csv_path, append=False)
 
-    
-##    model.fit(X_train, Y_train, batch_size=args.batch_size, validation_data=(X_test, Y_test, ), epochs = 30,
-##               verbose = 1, callbacks=[model_checkpoint_callback])
+   
 
     print(training_data)
 
@@ -357,10 +262,7 @@ def Data_training(args):
                   'sample_rate' : down_sample,
                   'sample_time' : sample_time, 
                   }
-##    models = {'convolution1d': CONVOLUTION1D(**parameters),
-##              'convolution2d': CONVOLUTION2D(**parameters)}
-##    assert model_selection in models.keys(), '{} not an available model'.format(model_selection)
-
+    
     csv_path = os.path.join('C:/Users/i00504285/Desktop/Aditya/Sound_Analysis/CSF48/logs','{}_history.csv'.format(model_selection))
     wave_direc = glob('{}/**'.format(source_fls), recursive =True)
     class_list = sorted(os.listdir(args.source_fls))
@@ -370,10 +272,7 @@ def Data_training(args):
     #labels = [os.path.split(x)[0].split('/')[-1] for x in wave_direc]
     labels = [os.path.dirname(x).split('/')[-1] for x in wave_direc]    
     labels = lab_enc.transform(labels)
-    
-
-##    predict('C:/Users/i00504285/Desktop/Aditya/Sound_Analysis/CSF48/models/convolution2d.h5', lab_enc, 'C:/Users/i00504285/Desktop/Aditya/Sound_Analysis/CSF48/wave_files/acc_audio/water/4c99d3b5-ce33-4e6d-a2b4-3c1696c42caa_0.wav')
-    
+        
     
     X_train, X_test, Y_train, Y_test = train_test_split(wave_direc, labels, test_size= 0.1, random_state = 0)
 
@@ -394,15 +293,6 @@ def Data_training(args):
     
     validate_data = DataGen(X_test, Y_test, down_sample, sample_time,
                             len(set(Y_test)), batch_size = batch_size)
-
-##    batch_xtrain, batch_ytrain = training_data[0]
-##    batch_xtest, batch_ytest = validate_data[0]
-##                    
-##    print(batch_xtest.shape)
-##    print(batch_ytest.shape)
-##    
-
-
 
 
 
